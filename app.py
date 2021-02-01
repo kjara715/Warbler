@@ -325,14 +325,20 @@ def messages_destroy(message_id):
 def like_message(message_id):
     """Like a message."""
 
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    #prevent user from liking their own message
+    m = Message.query.get(message_id)
+    if m in g.user.messages:
+        flash("You cannot like your own message.", "danger")
+        return redirect ("/")
     
-    
-    if Likes.query.filter_by(user_id=g.user.id, message_id=message_id):
-        liked_msg=Likes.query.filter_by(user_id=g.user.id, message_id=message_id)
+    #logic to unlike if the liked message is already an instance of the Likes class
+    if Likes.query.filter_by(user_id=g.user.id, message_id=message_id).all():
+        liked_msg=Likes.query.filter_by(user_id=g.user.id, message_id=message_id).one()
         db.session.delete(liked_msg)
         db.session.commit()
         return redirect('/')
@@ -342,7 +348,7 @@ def like_message(message_id):
     db.session.add(liked_msg)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}")
+    return redirect("/")
 
 @app.route('/users/<int:user_id>/likes')
 def show_likes(user_id):

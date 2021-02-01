@@ -40,6 +40,16 @@ class UserModelTestCase(TestCase):
         Follows.query.delete()
 
         self.client = app.test_client()
+        # app.config['TESTING']= True
+
+    def tearDown(self):
+
+        """Clean up anything in the session before next test."""
+        User.query.delete()
+        Message.query.delete()
+        Follows.query.delete()
+
+        db.session.rollback()
 
     def test_user_model(self):
         """Does basic model work?"""
@@ -56,3 +66,9 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u.messages), 0)
         self.assertEqual(len(u.followers), 0)
+        self.assertEqual( repr(u), "<User #1: testuser, test@test.com>")
+
+        db.session.delete(u)
+        db.session.commit()
+
+    
